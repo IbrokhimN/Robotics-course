@@ -1,62 +1,60 @@
-# RK370 Motor Parameters Estimation
+# Motor Parameters Estimation
 
-Инструменты для сбора и анализа данных об угловой скорости моторов RK370
-робота TRIK в зависимости от подаваемого напряжения (ШИМ).
+Tools for collecting and analyzing angular velocity data for TRIK robot RK370 motors depending on the supplied voltage (PWM).
 
-Проект состоит из трёх скриптов:
+The project consists of three scripts:
 
-*   `collect_data.py` собирает сырые данные на роботе.
-*   `plot.py` строит графики характеристик по каждому колесу.
-*   `plot_omega.py` строит сравнительный график по всем колёсам.
+* `collect_data.py` collects raw data on the robot.
+* `plot.py` plots characteristics for each wheel.
+* `plot_omega.py` plots a comparative graph for all wheels.
 
-## Содержание
+## Table of Contents
 
-*   [Структура проекта](#структура-проекта)
-*   [Нумерация колёс](#нумерация-колёс)
-*   [Формат данных](#формат-данных)
-*   [Быстрый старт](#быстрый-старт)
-*   [Скрипты](#скрипты)
-*   [Результаты](#результаты)
-*   [Лицензия](#лицензия)
+* [Project Structure](https://www.google.com/search?q=%23project-structure)
+* [Wheel Numbering](https://www.google.com/search?q=%23wheel-numbering)
+* [Data Format](https://www.google.com/search?q=%23data-format)
+* [Quick Start](https://www.google.com/search?q=%23quick-start)
+* [Scripts](https://www.google.com/search?q=%23scripts)
+* [Results](https://www.google.com/search?q=%23results)
 
-## Структура проекта
+## Project Structure
 
 ```
-Exp/
-├── collect_data.py       # Сбор данных (запускается на роботе)
-├── plot.py                # Графики ω(U%) и U/ω для каждого колеса
-├── plot_omega.py           # Совмещённый график ω(U) для всех колёс
-├── motor_graphs.png        # Результат: графики по каждому колесу
-├── omega_all_wheels.png    # Результат: сравнительный график всех колёс
-├── wheels.jpg               # Фото экспериментальной установки
-└── motor_data/              # Результаты измерений
-    ├── wheel_N_battery.txt  # Напряжение аккумулятора при замере колеса N
-    └── wheel_N_v_<V>.txt    # Позиция энкодера (°) и время (мс) при ШИМ V%
+src/
+├── collect_data.py        # Data collection (runs on the robot)
+├── plot.py                 # Plots ω(U%) and U/ω for each wheel
+├── plot_omega.py           # Combined plot ω(U) for all wheels
+├── motor_graphs.png        # Output: graphs for each wheel
+├── omega_all_wheels.png    # Output: comparative plot of all wheels
+├── wheels.jpg               # Photo of the experimental setup
+└── motor_data/              # Measurement results
+    ├── wheel_N_battery.txt  # Battery voltage during test for wheel N
+    └── wheel_N_v_<V>.txt    # Encoder position (deg) and time (ms) at PWM V%
+
 ```
 
-## Нумерация колёс
+## Wheel Numbering
 
-Идентификаторы колёс назначаются слева направо, начиная с 1:
+Wheel IDs are assigned from left to right, starting from 1:
 
-**1 → 2 → 3 → 4**
+**1 -> 2 -> 3 -> 4**
 
-Колесо **5** — мотор без колеса. Он нужен для сравнения характеристик
-нагруженного и ненагруженного мотора.
+Wheel **5** is a motor without a wheel. It is used to compare the characteristics of a loaded and an unloaded motor.
 
-## Формат данных
+## Data Format
 
 ### `wheel_N_battery.txt`
 
-Содержит напряжение аккумулятора в момент серии экспериментов:
+Contains the battery voltage at the time of the experiment series:
 
 ```
 battery_voltage_mv: 11.091765403747559
+
 ```
 
 ### `wheel_N_v_<V>.txt`
 
-Содержит временной ряд положения энкодера. Каждая строка имеет вид
-`<угол_в_градусах> <время_в_мс>`; строки, начинающиеся с `#`, — заголовок:
+Contains the time series of the encoder position. Each line has the format `<angle_in_degrees> <time_in_ms>`; lines starting with `#` are header lines:
 
 ```
 # wheel_id: 1
@@ -67,101 +65,85 @@ battery_voltage_mv: 11.091765403747559
 1 102
 3 305
 ...
+
 ```
 
-## Быстрый старт
+## Quick Start
 
-### Установите зависимости
+### Install Dependencies
 
 ```bash
 pip install numpy matplotlib
+
 ```
 
-### Запустите визуализацию
+### Run Visualization
 
 ```bash
 cd Exp
 
-# Графики по каждому колесу → motor_graphs.png
+# Graphs for each wheel -> motor_graphs.png
 python plot.py
 
-# Сравнительный график по всем колёсам → omega_all_wheels.png
+# Comparative plot for all wheels -> omega_all_wheels.png
 python plot_omega.py
-```
-
-## Скрипты
-
-### collect_data.py — сбор данных на TRIK
-
-Запускается непосредственно на роботе. Скрипт перебирает значения ШИМ от
-−100% до +100% с шагом 5% и для каждого значения выполняет следующие шаги:
-
-1.  Сбрасывает энкодер.
-2.  Подаёт напряжение на мотор.
-3.  В течение 2 секунд с интервалом 5 мс записывает показания энкодера в файл.
-4.  Отключает мотор и делает паузу 1 секунду.
-
-Перед запуском задайте параметры в начале файла:
-
-| Параметр       | Описание                           | Пример |
-| -------------- | ----------------------------------- | ------ |
-| `WHEEL_ID`     | Номер колеса                        | `1`    |
-| `MOTOR_PORT`   | Порт мотора на контроллере          | `"M1"` |
-| `ENCODER_PORT` | Порт энкодера на контроллере        | `"E1"` |
-| `RUN_TIME`     | Время записи на одно напряжение, с  | `2.0`  |
-
-### plot.py — графики по каждому колесу
-
-Читает все файлы из `motor_data/`, вычисляет угловую скорость ω (°/с) как
-наклон линейного участка графика положения (последние ~60% точек по времени)
-и для каждого колеса строит:
-
-*   **ω vs ШИМ (%)** — scatter-plot с линейной аппроксимацией.
-*   **U/ω vs ШИМ (%)** — гистограмму коэффициента «вольт на градус/с» с
-    горизонтальной линией среднего значения.
-
-Результат сохраняется в `motor_graphs.png`.
-
-### plot_omega.py — совмещённый график
-
-Строит зависимость ω от фактического напряжения U (В) для всех колёс на
-одном графике. Фактическое напряжение вычисляется по формуле:
 
 ```
-U = (ШИМ% / 100) × напряжение_аккумулятора
+
+## Scripts
+
+### collect_data.py - Data Collection on TRIK
+
+Runs directly on the robot. The script iterates through PWM values from -100% to +100% in 5% steps, performing the following actions for each value:
+
+1. Resets the encoder.
+2. Applies voltage to the motor.
+3. Records encoder readings to a file for 2 seconds at 5 ms intervals.
+4. Turns off the motor and waits for 1 second.
+
+Before running, set the parameters at the beginning of the file:
+
+| Parameter | Description | Example |
+| --- | --- | --- |
+| `WHEEL_ID` | Wheel number | `1` |
+| `MOTOR_PORT` | Controller motor port | `"M1"` |
+| `ENCODER_PORT` | Controller encoder port | `"E1"` |
+| `RUN_TIME` | Recording duration per voltage value, seconds | `2.0` |
+
+### plot.py - Individual Wheel Graphs
+
+Reads all files from `motor_data/`, calculates angular velocity ω (deg/s) as the slope of the linear region of the position plot (the last ~60% of data points over time), and plots the following for each wheel:
+
+* **ω vs PWM (%)** - Scatter plot with linear approximation.
+* **U/ω vs PWM (%)** - Histogram of the "volts per deg/s" coefficient with a horizontal mean line.
+
+The output is saved to `motor_graphs.png`.
+
+### plot_omega.py - Combined Plot
+
+Plots ω as a function of the actual voltage U (V) for all wheels on a single graph. The actual voltage is calculated using the formula:
+
+```
+U = (PWM% / 100) * battery_voltage
+
 ```
 
-Результат сохраняется в `omega_all_wheels.png`.
+The output is saved to `omega_all_wheels.png`.
 
-## Результаты
+## Results
 
-### Характеристики моторов по каждому колесу
+### Motor Characteristics per Wheel
 
-![Характеристики моторов — ω(U%) и U/ω](src/motor_graphs.png)
+On the left is the angular velocity versus PWM with linear approximation (slope `k` in deg/s per 1% PWM); on the right is the U/ω coefficient, which ideally should remain constant. All wheels display a distinct drop in the coefficient around zero, indicating a dead zone effect at low voltages.
 
-Слева — зависимость угловой скорости от ШИМ с линейной аппроксимацией
-(коэффициент `k` в °/с на 1% ШИМ), справа — коэффициент U/ω, который в
-идеале должен быть постоянным. У всех колёс заметен характерный провал
-коэффициента около нуля — эффект зоны нечувствительности (мёртвой зоны)
-мотора при малых напряжениях.
+| Wheel | Slope k, deg/s per 1% PWM | Average U/ω, V*s/deg |
+| --- | --- | --- |
+| 1 | 8.44 | 0.02016 |
+| 2 | 8.95 | 0.01069 |
+| 3 | 8.99 | 0.01048 |
+| 4 | 7.90 | 0.01289 |
+| 5 (no wheel) | 9.02 | 0.01026 |
 
-| Колесо         | Наклон k, °/с на 1% ШИМ | Среднее U/ω, В·с/° |
-| -------------- | ------------------------ | -------------------- |
-| 1               | 8.44                      | 0.02016               |
-| 2               | 8.95                      | 0.01069               |
-| 3               | 8.99                      | 0.01048               |
-| 4               | 7.90                      | 0.01289               |
-| 5 (без колеса) | 9.02                      | 0.01026               |
+### Comparison of All Wheels
 
-### Сравнение всех колёс
-
-![Зависимость ω от U для всех колёс](src/omega_all_wheels.png)
-
-График показывает зависимость угловой скорости от фактического напряжения на
-моторе (В) для всех пяти колёс на одних осях. Кривые в целом совпадают, а
-S-образный изгиб около нуля подтверждает наличие мёртвой зоны, общей для всех
-моторов.
-
-## Лицензия
-
-Проект распространяется по лицензии [MIT](LICENSE).
+The graph illustrates the angular velocity dependence on the actual motor voltage (V) for all five wheels on shared axes. The curves generally align, and the S-curve near zero confirms the presence of a dead zone common to all motors.
