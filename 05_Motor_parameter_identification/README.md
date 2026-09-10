@@ -134,6 +134,8 @@ The output is saved to `omega_all_wheels.png`.
 
 ### Motor Characteristics per Wheel
 
+![Характеристики моторов — ω(U%) и U/ω](src/motor_graphs.png)
+
 On the left is the angular velocity versus PWM with linear approximation (slope `k` in deg/s per 1% PWM); on the right is the U/ω coefficient, which ideally should remain constant. All wheels display a distinct drop in the coefficient around zero, indicating a dead zone effect at low voltages.
 
 | Wheel | Slope k, deg/s per 1% PWM | Average U/ω, V*s/deg |
@@ -145,5 +147,7 @@ On the left is the angular velocity versus PWM with linear approximation (slope 
 | 5 (no wheel) | 9.02 | 0.01026 |
 
 ### Comparison of All Wheels
+
+![Зависимость ω от U для всех колёс](src/omega_all_wheels.png)
 
 The graph illustrates the angular velocity dependence on the actual motor voltage (V) for all five wheels on shared axes. The curves generally align, and the S-curve near zero confirms the presence of a dead zone common to all motors.
