@@ -80,7 +80,7 @@ pip install numpy matplotlib
 ### Run Visualization
 
 ```bash
-cd Exp
+cd src
 
 # Graphs for each wheel -> motor_graphs.png
 python plot.py
